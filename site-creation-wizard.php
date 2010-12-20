@@ -1,11 +1,11 @@
 <?php
 /*
 Plugin Name: Site Creation Wizard
-Version: 1.0
+Version: 2.0
 Description: Allow users to create a site using predefined templates. Compatible with BuddyPress and More Privacy Options.
 Author: Jon Gaulding, Ioannis Yessios
 Author URI: http://itg.yale.edu
-Plugin URI: http://itg.yale.edu
+Plugin URI: http://plugins.commons.yale.edu/site-creation-wizard/
 Site Wide Only: true
 Network: true
 */
@@ -33,7 +33,14 @@ class CreationWizard {
 		if ( is_admin() ){
 			add_action( 'admin_init', array( $this, 'register' ) );
 		}
+		wp_register_style('scw-smoothness', WP_PLUGIN_URL . '/' . plugin_basename( dirname(__FILE__) ) . '/resources/css/smoothness/jquery-ui-1.8.7.custom.css');
 
+		if ( isset($_REQUEST['page']) && $_REQUEST['page'] == 'site_creation_wizard' ) {
+			wp_enqueue_script( 'jquery-ui-sortable' );
+			wp_enqueue_script( 'thickbox' );
+			wp_enqueue_style( 'thickbox' );
+			wp_enqueue_style( 'scw-smoothness' );
+		}
 		if ( $_SERVER['PHP_SELF'] == '/wp-signup.php' ) {
 			wp_enqueue_script( 'jquery' );
 			wp_enqueue_script( 'jquery-ui-dialog' );
@@ -42,6 +49,7 @@ class CreationWizard {
 		add_action( 'signup_blogform', array( $this, 'signup_form' ) );
 		add_action( 'admin_menu', array( $this, 'plugin_menu' ) );
 		add_action( 'signup_header', array( $this, 'signup_header' ) );
+		add_action( 'wp_ajax_scw-findsite', array( $this, 'findsite') );
 	}
 	function register() {
 		register_setting( 'blogswizard-option-group', 'type_options_array' );
@@ -143,13 +151,6 @@ class CreationWizard {
 					
 					return true;
 				});
-				<?php
-					if ( class_exists("ds_more_privacy_options") ): 
-				?>
-					$('#privacy').append( '...or ' );
-				<?php
-					endif;
-				?>
 			});
 		</script>
         <?php
@@ -403,6 +404,7 @@ class CreationWizard {
 
 	// create settings page and add this to settings menu
 	function settings_page() {
+		if ( !is_super_admin() ) die( 'You are not allowed to do this!' );
 		$optionspath = dirname(__FILE__) . "/" . "options.php";
 		include($optionspath);
 	}
@@ -413,7 +415,7 @@ class CreationWizard {
 		
 		
 		
-		add_submenu_page( ( ( $this->get_major_version() == 3 )?'ms-admin.php':'wpmu-admin.php' ),$term.' Creation Wizard', $term.' Creation Wizard', 'update_core', __FILE__, array( $this, 'settings_page' ) );
+		add_submenu_page( ( ( $this->get_major_version() == 3 )?'ms-admin.php':'wpmu-admin.php' ),$term.' Creation Wizard', $term.' Creation Wizard', 'update_core', 'site_creation_wizard', array( $this, 'settings_page' ) );
 		
 		$active_signup = get_site_option( 'registration' );
 		if ( !$active_signup )
@@ -422,7 +424,50 @@ class CreationWizard {
 		if ( $active_signup == 'all' || $active_signup == 'blog' )
 			add_dashboard_page( 'Create New '.$term, 'Create New '.$term, 'read', "/wp-signup.php" );
 	}
+	
+	function model_path( $ind = 'X', $type = 'default', $options = array() ) {
+		$options = ( count($options) != 0 ) ? $options : array( 'name' => '', 'modelblog' => '', 'description' => '', 'adminonly' => 'no' );
+		
+		if ( ltrim( $options['modelblog'] ) == '' && $ind != 'X' ) return;
+		
+		$scw_prefix = $type.'option_'.$ind.'_';
+		?>
 
+        <li id="<?php $scw_prefix; ?>container" class="ui-widget-content ui-corner-all">
+            <table cellpadding="0" cellspacing="0" width="100%">
+                <tr valign="top">
+                   <td width="17px" valign="middle"><span title="Drag to Reorder" class="ui-icon ui-icon-arrowthick-2-n-s"></span></td>
+                   <td width="180px" style="border-right:1px dashed blue">
+                        <input width="100%" type="text" name="<?php echo $scw_prefix; ?>name" value="<?php echo $options['name']; ?>" />
+                    </td>
+                    <td  width="80px">
+                        <input size="6" type="text" id="<?php echo $scw_prefix; ?>modelblog" value="<?php echo $options['modelblog']; ?>" name="<?php echo $scw_prefix; ?>modelblog" value="<?php echo $options['modelblog']; ?>" />
+                    </td>
+                    <td width="17px" style="border-right:1px dashed blue">
+                        <div class="scw-searchbox ui-state-hover ui-corner-all"><a class="ui-icon ui-icon-search thickbox" href="<?php
+							 echo get_bloginfo('url') . '/wp-admin/admin-ajax.php?action=scw-findsite&target=' . $scw_prefix; 
+							?>modelblog&TB_iframe=1&height=400&width=400" title="Search for Site ID"></a><div>                        
+                    </td>
+                    <td style="border-right:1px dashed blue">
+                        <textarea rows="3" type="text" name="<?php echo $scw_prefix; ?>description" style="width:100%"><?php echo $options['description']; ?></textarea>
+                    </td>
+                    <td width="120px" style="text-align:center">
+                        <input type="checkbox" title="Limit availability to Super Admins Only" name="<?php echo $scw_prefix; ?>adminonly" value="yes" <?php echo ( $options['adminonly']  == 'yes' ) ? 'checked="checked"': ''; ?> />
+                    </td>
+                    <td width="20px" align="center" style="text-align:right">
+                        <div class="scw_remove_out ui-state-hover ui-corner-all"><span title="Remove Row" class="scw_remove ui-icon ui-icon-closethick"></span></div>
+                    </td>
+                </tr>
+            </table>
+        </li>
+    <?php	
+	}
+
+	function findsite() {
+		if ( !is_super_admin() ) die ('You are not allowed to do this!');
+		include( dirname(__FILE__) . "/" . "search.php" );		
+		exit;
+	}
 	/**************************************************************
 	* @return the major version (2 or 3)
 	***************************************************************/

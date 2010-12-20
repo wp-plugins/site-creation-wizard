@@ -2,8 +2,8 @@
 Contributors: yianniy
 Tags: wpmu, admin, administration, buddypress, site creation, more privacy options, site template
 Requires at least: 3.0
-Tested up to: 3.0.1
-Stable tag: 1.0
+Tested up to: 3.0.2
+Stable tag: 2.0
 
 Allow users to create a site using predefined templates. Compatible with BuddyPress and More Privacy Options.
 
@@ -91,10 +91,19 @@ Well, the too creation processes are completely different. If you want to use th
  
 == Changelog ==
 
+= 2.0 =
+* Fixed problem with link to signup page (I hope).
+* Updated User Interface
+** Now can search for sites ID within the plugins inteface
+** Site and Feature models are sortable.
+
 = 1.0 =
 * This is the first version.
 
 == Upgrade Notice ==
+
+= 2.0 =
+Better User interface and fixed bug with link to signup form (I hope) for sub-directory installs.
 
 = 1.0 =
 This is the first version.

@@ -51,185 +51,70 @@ if ( isset( $_REQUEST['_wpnonce'] ) ) {
 	update_site_option('type_options_array', $type_options_array );
 	update_site_option('features_options_array', $features_options_array );
 }
+
+$type_options_array = (get_site_option('type_options_array') && !is_null(get_site_option('type_options_array')) ) ? 
+	get_site_option('type_options_array') : array();
+
+$features_options_array = (get_site_option('features_options_array') && !is_null(get_site_option('features_options_array')) )?
+	get_site_option('features_options_array') : array();
+
 ?>
 
 <script type="text/javascript">
-	type_options_count = 0; // init @ zero
-	
-	function add_blog_type_option(target_div, preloaded_name, preloaded_modelblog, preloaded_description, preloaded_adminonly) {
-		var option_HTML = document.getElementById('type_option_model').innerHTML;
-		option_HTML = option_HTML.replace('typeoption_X_container', 'typeoption_' + type_options_count + '_container');
-		option_HTML = option_HTML.replace('typeoption_X_container', 'typeoption_' + type_options_count + '_container');
-		option_HTML = option_HTML.replace('typeoption_X_name', 'typeoption_' + type_options_count + '_name');
-		option_HTML = option_HTML.replace('typeoption_X_modelblog', 'typeoption_' + type_options_count + '_modelblog');
-		option_HTML = option_HTML.replace('typeoption_X_description', 'typeoption_' + type_options_count + '_description');
-		option_HTML = option_HTML.replace('typeoption_X_adminonly', 'typeoption_' + type_options_count + '_adminonly');
-		option_HTML = option_HTML.replace('preloaded_name', preloaded_name);
-		option_HTML = option_HTML.replace('preloaded_modelblog', preloaded_modelblog);
-		option_HTML = option_HTML.replace('preloaded_description', preloaded_description);
-		option_HTML = option_HTML.replace('preloaded_adminonly', preloaded_adminonly);
-		
-		//document.getElementById(target_div).appendChild += option_HTML;
-		var newdiv = document.createElement('div');
-		newdiv.innerHTML = option_HTML;
-		document.getElementById(target_div).appendChild(newdiv);
-		type_options_count++;
-	}
-	
-	function remove_blog_type_option(option_container) {
-		document.getElementById(option_container).innerHTML = '';
-	}
-	
-	// feature options functions:
-	feature_options_count = 0;
-	
-	function add_feature_option(target_div, preloaded_name, preloaded_modelblog, preloaded_description, preloaded_adminonly) {
-		
-		var option_HTML = document.getElementById('feature_option_model').innerHTML;
-		option_HTML = option_HTML.replace('featureoption_X_container', 'featureoption_' + feature_options_count + '_container');
-		option_HTML = option_HTML.replace('featureoption_X_container', 'featureoption_' + feature_options_count + '_container');
-		option_HTML = option_HTML.replace('featureoption_X_name', 'featureoption_' + feature_options_count + '_name');
-		option_HTML = option_HTML.replace('featureoption_X_modelblog', 'featureoption_' + feature_options_count + '_modelblog');
-		option_HTML = option_HTML.replace('featureoption_X_description', 'featureoption_' + feature_options_count + '_description');
-		option_HTML = option_HTML.replace('featureoption_X_adminonly', 'featureoption_' + feature_options_count + '_adminonly');
-		option_HTML = option_HTML.replace('preloaded_name', preloaded_name);
-		option_HTML = option_HTML.replace('preloaded_modelblog', preloaded_modelblog);
-		option_HTML = option_HTML.replace('preloaded_description', preloaded_description);
-		option_HTML = option_HTML.replace('preloaded_adminonly', preloaded_adminonly);
-		
-		var newdiv = document.createElement('div');
-		newdiv.innerHTML = option_HTML;
-		document.getElementById(target_div).appendChild(newdiv);
-		feature_options_count++;
-	}
-	
-	function remove_feature_option(option_container) {
-		document.getElementById(option_container).innerHTML = '';
+	jQuery(document).ready( function($) {
+		var type_options_count =<?php echo count( $type_options_array ); ?>;
+		var feature_options_count = <?php echo count($features_options_array);?>;
+		scw_add_remover();
+		$('.ui-icon-arrowthick-2-n-s').css('cursor','move');
+		$('#scw_feature_options, #scw_type_options').sortable();
+		$('#scw_add_type_button').click( function() {
+			var lihtml = $('#scw_default_li').html();
+			lihtml = lihtml.replace(/_X_/g, '_' + (type_options_count++) + '_');
+			lihtml = lihtml.replace(/default/g, 'type');			
+			$('#scw_type_options').append(lihtml);
+			scw_add_remover();
+		});
+		$('#scw_add_feature_button').click( function() {
+			var lihtml = $('#scw_default_li').html();
+			lihtml = lihtml.replace(/_X_/g, '_' + (feature_options_count++) + '_');	
+			lihtml = lihtml.replace(/default/g, 'feature');
+			$('#scw_feature_options').append(lihtml);
+			scw_add_remover();
+		});
+		scw_resize_tb();
+		$(window).resize( function() { scw_resize_tb() } );
+		function scw_resize_tb () {
+			var h = Math.floor( $(window).height() * .8 );
+			var w = Math.min( Math.floor( $(window).width() * .8 ), 800 );
+			$('a.thickbox').each( function() {
+				var basehref = $(this).attr('href').replace(/TB_iframe.*$/,'');
+				$(this).attr('href', basehref + 'TB_iframe=1&height=' + h + '&width=' + w);
+			})
+		}
+		function scw_add_remover() {
+			$('.scw_remove').click( function() {
+				$(this).parent().parent().parent().parent().parent().parent().remove();
+			} );
+		}
+	});
+	function scw_settheid(target, id) {
+		jQuery('#'+target).attr('value',id);
+		tb_remove();
 	}
 </script>
-
 <?php
-$existing_options = array();
 
-if(get_site_option('type_options_array') && !is_null(get_site_option('type_options_array')) ) {
-	$type_options_array = get_site_option('type_options_array');
-	
-	foreach($type_options_array as $option) {
-		$adminonly = ($option['adminonly'] == 'yes' ? 'checked' : '');
-		$existing_options[] = "add_blog_type_option('existing_type_options', '" . $option['name'] . "', '" . $option['modelblog'] . "', '" . $option['description'] . "', '" . $adminonly . "');";
-	}
-	
-}
+echo '<div id="scw_default_li" style="display:none">';
+$this->model_path();
+echo "</div>";
+//$this->model_path('X', 'feature');
 
-if(get_site_option('features_options_array') && !is_null(get_site_option('features_options_array')) ) {
-	$features_options_array = get_site_option('features_options_array');
-	
-	foreach($features_options_array as $option) {
-		$adminonly = ($option['adminonly'] == 'yes' ? 'checked' : '');	
-		$existing_options[] =  "add_feature_option('existing_feature_options', '" . $option['name'] . "', '" . $option['modelblog'] . "', '" . $option['description'] . "', '" . $adminonly . "');";
-	}
-}
-
-echo "<body onload=\"";
-
-foreach($existing_options as $option) {
-	echo $option;
-}
-
-echo "\">";
 ?>
-<div id="type_option_model" style="display:none">
-	<div id="typeoption_X_container">
-		<div style="border:1px dotted black;padding:5px;background-color:#FFF">
-			<table cellpadding="0" cellspacing="0" width="100%">
-				<tr>
-					<td width="20%" align="center" style="border-bottom:1px solid blue;border-right:1px dashed blue">
-						name of type
-					</td>
-					<td width="10%" align="center" style="border-bottom:1px solid blue;border-right:1px dashed blue">
-						template site ID
-					</td>
-					<td width="50%" align="center" style="border-bottom:1px solid blue;border-right:1px dashed blue">
-						description
-					</td>
-					<td width="15%" align="center" style="border-bottom:1px solid blue">
-						super-admin only?
-					</td>
-					<td width="5%" align="center" style="border-bottom:1px solid blue;text-align:right">
-						<input type="button" value="X" onClick="remove_blog_type_option('typeoption_X_container')" style="color:red;">
-					</td>
-				</tr>
-				<tr>
-					<td style="border-right:1px dashed blue">
-						<input width="100%" type="text" name="typeoption_X_name" value="preloaded_name" />
-					</td>
-					<td style="border-right:1px dashed blue">
-						<input size="8" type="text" name="typeoption_X_modelblog" value="preloaded_modelblog" />
-					</td>
-					<td style="border-right:1px dashed blue">
-						<textarea rows="3" type="text" name="typeoption_X_description" style="width:100%">preloaded_description</textarea>
-					</td>
-					<td style="text-align:center">
-				   		<input type="checkbox" name="typeoption_X_adminonly" value="yes" preloaded_adminonly />
-					</td>
-					<td>
-					
-					</td>
-				</tr>
-			</table>
-		</div>
-	</div><!-- end one type option div -->
-
-</div>
-
-<div id="feature_option_model" style="display:none">
-	<div id="featureoption_X_container">
-		<div style="border:1px dotted black;padding:5px;background-color:#FFF">
-			<table cellpadding="0" cellspacing="0" width="100%">
-				<tr>
-					<td width="20%" align="center" style="border-bottom:1px solid blue;border-right:1px dashed blue">
-						feature
-					</td>
-					<td width="10%" align="center" style="border-bottom:1px solid blue;border-right:1px dashed blue">
-						feature blog ID
-					</td>
-					<td width="50%" align="center" style="border-bottom:1px solid blue;border-right:1px dashed blue">
-						feature description
-					</td>
-					<td width="15%" align="center" style="border-bottom:1px solid blue">
-						super-admin only?
-					</td>
-					<td width="5%" align="center" style="border-bottom:1px solid blue;text-align:right">
-						<input type="button" value="X" onClick="remove_feature_option('featureoption_X_container')" style="color:red;">
-					</td>
-				</tr>
-				<tr>
-					<td style="border-right:1px dashed blue">
-						<input width="100%" type="text" name="featureoption_X_name" value="preloaded_name" />
-					</td>
-					<td style="border-right:1px dashed blue">
-						<input size="8" type="text" name="featureoption_X_modelblog" value="preloaded_modelblog" />
-					</td>
-					<td style="border-right:1px dashed blue">
-						<textarea rows="3" type="text" name="featureoption_X_description" style="width:100%">preloaded_description</textarea>
-					</td>
-					<td style="text-align:center">
-						<input type="checkbox" name="featureoption_X_adminonly" value="yes" preloaded_adminonly />
-					</td>
-				</tr>
-			</table>
-			  
-		</div>
-	
-	</div><!-- end one type option div -->
-
-</div>
-
 <div class="wrap">
 
 <h2>Site Creation Wizard Settings -- Blog Types</h2>
 
-<form name="input" method="post" action="#">
+<form name="input" method="post" action="">
 	<?php 
 	wp_nonce_field( );
 	//settings_fields( 'blogswizard-option-group' ); ?> 
@@ -257,12 +142,45 @@ echo "\">";
 		<tr valign="top">
 			<td>
 				<h3>Type of Site</h3>
-				<div id="existing_type_options">
-				</div>
-				<div id="type_options">
-				</div><!-- end type options div -->
-				<br />
-				<input type="button" value="Add New Site Type" onClick="add_blog_type_option('type_options', '', '', '', '')">
+                <ul>
+                <li class="ui-widget-header">
+                    <table cellpadding="0" cellspacing="0" width="100%">
+                        <tr>
+                        	<td width="17px">&nbsp;</td>
+                            <td width="180px" align="left" style="border-right:1px dashed blue">
+                                name<?php echo $type; ?>
+                            </td>
+                            <td width="80px" align="left">
+                                template site
+                            </td>
+                            <td width="17px" align="center" style="border-right:1px dashed blue">&nbsp;
+                                
+                            </td>
+                            <td align="left" style="border-right:1px dashed blue">
+                                description
+                            </td>
+                            <td width="120px" align="center">
+                                super-admin only?
+                            </td>
+                            <td width="20px" align="center" style="text-align:right">
+                            </td>
+                        </tr>
+                    </table>
+                </li>
+                </ul>
+                <ul id="scw_type_options">
+                <?php				
+				$i = 0;
+				if ( count( $type_options_array ) > 0 ) {
+					foreach($type_options_array as $option) {
+						$this->model_path( $i++, 'type', $option);
+					}
+				} else {
+						$this->model_path( $i, 'type', array() );					
+				}
+				?>
+                </ul>
+				<input id="scw_add_type_button" type="button" name="scw_add_site_type" value="Add Site Type">
 				<input type="hidden" id="types_submitted" name="types_submitted" value="yes" />
 			</td>
 		</tr>
@@ -280,12 +198,45 @@ echo "\">";
 		<tr valign="top">
 			<td>
 				<h3>Features</h3>
-				<div id="existing_feature_options">
-				</div>
-				<div id="feature_options">
-				</div><!-- end features options div -->
-				<br />
-				<input type="button" value="Add features option" onClick="add_feature_option('feature_options', '', '', '', '')">
+                <ul>
+                <li class="ui-widget-header">
+                    <table cellpadding="0" cellspacing="0" width="100%">
+                        <tr>
+                        	<td width="17px">&nbsp;</td>
+                            <td width="180px" align="left" style="border-right:1px dashed blue">
+                                name<?php echo $type; ?>
+                            </td>
+                            <td width="80px" align="left">
+                                template site
+                            </td>
+                            <td width="17px" align="center" style="border-right:1px dashed blue">&nbsp;
+                                
+                            </td>
+                            <td align="left" style="border-right:1px dashed blue">
+                                description
+                            </td>
+                            <td width="120px" align="center">
+                                super-admin only?
+                            </td>
+                            <td width="20px" align="center" style="text-align:right">
+                            </td>
+                        </tr>
+                    </table>
+                </li>
+                </ul>
+				<ul id="scw_feature_options">
+                <?php
+				$i = 0;
+				if ( count( $features_options_array ) > 0 ) {
+					foreach($features_options_array as $option) {
+						$this->model_path( $i++, 'feature', $option);
+					}
+				} else {
+					$this->model_path( $i++, 'feature', $option);
+				}
+				?>
+				</ul><!-- end features options div -->
+				<input id="scw_add_feature_button" type="button" name="scw_add_site_type" value="Add Feature">
 				<input type="hidden" id="feature_submitted" name="feature_submitted" value="yes" />
 			</td>
 		</tr>	
