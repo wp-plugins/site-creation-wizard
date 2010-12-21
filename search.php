@@ -217,7 +217,7 @@ $sites_columns = apply_filters( 'wpmu_blogs_columns', $sites_columns );
 						switch ( $column_name ) {
 							case 'id': ?>
 								<th scope="row" class="check-column">
-									<div title="Select this Site" class="scw-check ui-state-default ui-corner-all"><a href="#" class="ui-icon ui-icon-check" onClick="scw_setid('<?php echo $_REQUEST['target'];?>',<?php echo $blog['blog_id']; ?>); return false;"></a></div>
+									<div title="Select this Site" class="scw-check ui-state-default ui-corner-all" style="margin-left:2px;"><a href="#" class="ui-icon ui-icon-check" onClick="scw_setid('<?php echo $_REQUEST['target'];?>',<?php echo $blog['blog_id']; ?>); return false;"></a></div>
 								</th>
 								<th valign="top" scope="row">
 									<?php echo $blog['blog_id'] ?>

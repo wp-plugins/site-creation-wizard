@@ -29,6 +29,10 @@ Features are also controlled by sites within your Multi-site environment. Featur
 
 It is possible to configure the site with Use Policy. The Use Policy is text at the end of the form that defines any policies users are expected to adhere to. It is possible to define a checkbox that needs to be clicked before the form can be submitted.
 
+= User Registration Form =
+
+The user registration form has been modified so that it no longer allows users to create a new blog as well as register. Once they have confirmed registration, they will be able to create a new site using the 'Create New Site' link in the Dashboard. This may be a bit less convenient but there was no good way to make the wizards features carry through the confirmation process.
+
 = Compatibility =
 
 **More Privacy Options**
@@ -91,6 +95,10 @@ Well, the too creation processes are completely different. If you want to use th
  
 == Changelog ==
 
+= 2.1 =
+
+* Fixed bug that prevented new users from registering.
+
 = 2.0 =
 * Fixed problem with link to signup page (I hope).
 * Updated User Interface
@@ -101,6 +109,9 @@ Well, the too creation processes are completely different. If you want to use th
 * This is the first version.
 
 == Upgrade Notice ==
+
+= 2.1 = 
+Fixes a problem that prevented the user registration form from working. Some minor UI tweaks.
 
 = 2.0 =
 Better User interface and fixed bug with link to signup form (I hope) for sub-directory installs.

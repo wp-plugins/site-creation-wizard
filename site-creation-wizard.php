@@ -1,11 +1,11 @@
 <?php
 /*
 Plugin Name: Site Creation Wizard
-Version: 2.0
+Version: 2.1
 Description: Allow users to create a site using predefined templates. Compatible with BuddyPress and More Privacy Options.
 Author: Jon Gaulding, Ioannis Yessios
 Author URI: http://itg.yale.edu
-Plugin URI: http://plugins.commons.yale.edu/site-creation-wizard/
+Plugin URI: http://itg.yale.edu
 Site Wide Only: true
 Network: true
 */
@@ -44,12 +44,14 @@ class CreationWizard {
 		if ( $_SERVER['PHP_SELF'] == '/wp-signup.php' ) {
 			wp_enqueue_script( 'jquery' );
 			wp_enqueue_script( 'jquery-ui-dialog' );
+			wp_enqueue_style( 'scw-smoothness' );
 		}
 		add_action( 'wpmu_new_blog', array( $this, 'wpmu_new_blog' ) );
 		add_action( 'signup_blogform', array( $this, 'signup_form' ) );
 		add_action( 'admin_menu', array( $this, 'plugin_menu' ) );
 		add_action( 'signup_header', array( $this, 'signup_header' ) );
 		add_action( 'wp_ajax_scw-findsite', array( $this, 'findsite') );
+		add_action( 'preprocess_signup_form', array( $this, 'preprocess' ) );
 	}
 	function register() {
 		register_setting( 'blogswizard-option-group', 'type_options_array' );
@@ -60,55 +62,6 @@ class CreationWizard {
 	function signup_header () {
 		?>
         <style type="text/css">
-			.ui-dialog {
-				background:#eee;
-				border:2px solid #666;
-				-webkit-border-radius: 10px;
-				-khtml-border-radius: 10px;	
-				-moz-border-radius: 10px;
-				border-radius: 10px;
-			}
-			.ui-dialog-titlebar {
-				background:#ccc;
-				border-bottom:1px solid #666;
-				padding:10px;
-				-webkit-border-radius: 10px 10px 0 0;
-				-khtml-border-radius: 10px 10px 0 0;
-				-moz-border-radius: 10px 10px 0 0;
-				border-radius: 10px 10px 0 0;
-			}
-			.ui-dialog-titlebar-close {
-				float:right;
-				height:9px;
-				width:9px;
-				text-indent:-99999px;
-				background: url(<?php echo WP_PLUGIN_URL . '/' . plugin_basename( dirname(__FILE__) ) . '/'; ?>images/close.png) no-repeat 50% 50% transparent;
-				padding:2px;
-				border:1px solid #ccc;
-				-webkit-border-radius: 2px;
-				-khtml-border-radius: 2px;	
-				-moz-border-radius: 2px;
-				border-radius: 2px;
-			}
-			.ui-dialog-titlebar-close:hover {
-				border:1px solid #999;
-				background-color: #aaa;
-			}
-
-			.ui-dialog-content {
-				padding:10px;
-			}
-			.ui-widget-overlay {
-				background:#333;
-				opacity: .5;
-				left: 0;
-				position:absolute;
-				top: 0;
-			}
-			.ui-dialog-buttonpane {
-				text-align:center;
-				padding:0 0 5px 0;
-			}
 			<?php
 			if ( class_exists("ds_more_privacy_options") ): 
 			?>
@@ -142,15 +95,19 @@ class CreationWizard {
 				$('#setupform').submit(function() {
 					//alert('click: ' + $('#wizard_checkbox:checkbox').val());
 					//alert('click: ' + $('#wizard_checkbox').val());
-					if ( $('#wizard_checkbox:checkbox').val() == null && $('#wizard_checkbox').val() == 1) {
-						return true;
-					} else if ( $('#wizard_checkbox:checked').val() == null ) {
-						$('#wizard-dialog').dialog( 'open' );
-						return false;
+					if ( $('#wizard_checkbox').val() ) {
+						if ( $('#wizard_checkbox:checkbox').val() == null && $('#wizard_checkbox').val() == 1) {
+							return true;
+						} else if ( $('#wizard_checkbox:checked').val() == null ) {
+							$('#wizard-dialog').dialog( 'open' );
+							return false;
+						}
 					}
-					
 					return true;
 				});
+				if ( $('#signupblog').val() ) {
+					$('#signupblog').attr('value','user').parent().css('display','none');	
+				}
 			});
 		</script>
         <?php
@@ -269,6 +226,11 @@ class CreationWizard {
 			}
 			update_blog_option($new_blog_id, 'active_plugins', $new_blog_active_plugins);
 		}
+	}
+	
+	function preprocess () {
+		if ( isset( $_REQUEST['signup_for'] ) )
+			$_REQUEST['signup_for'] = 'user';	
 	}
 	
 	function signup_form() {
@@ -455,7 +417,7 @@ class CreationWizard {
                         <input type="checkbox" title="Limit availability to Super Admins Only" name="<?php echo $scw_prefix; ?>adminonly" value="yes" <?php echo ( $options['adminonly']  == 'yes' ) ? 'checked="checked"': ''; ?> />
                     </td>
                     <td width="20px" align="center" style="text-align:right">
-                        <div class="scw_remove_out ui-state-hover ui-corner-all"><span title="Remove Row" class="scw_remove ui-icon ui-icon-closethick"></span></div>
+                        <div class="scw_remove_out ui-state-hover ui-corner-all"><a title="Remove Row" class="scw_remove ui-icon ui-icon-closethick"></a></div>
                     </td>
                 </tr>
             </table>

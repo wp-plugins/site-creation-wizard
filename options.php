@@ -94,7 +94,7 @@ $features_options_array = (get_site_option('features_options_array') && !is_null
 		function scw_add_remover() {
 			$('.scw_remove').click( function() {
 				$(this).parent().parent().parent().parent().parent().parent().remove();
-			} );
+			} ).css('cursor','pointer');
 		}
 	});
 	function scw_settheid(target, id) {
