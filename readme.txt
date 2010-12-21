@@ -3,7 +3,7 @@ Contributors: yianniy
 Tags: wpmu, admin, administration, buddypress, site creation, more privacy options, site template
 Requires at least: 3.0
 Tested up to: 3.0.2
-Stable tag: 2.0
+Stable tag: 2.1
 
 Allow users to create a site using predefined templates. Compatible with BuddyPress and More Privacy Options.
 
