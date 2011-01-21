@@ -392,18 +392,12 @@ class CreationWizard {
 	}
 	
 	function scw_signup() {
-		//echo "<h2>I am here</h2>";
-		
 		$site = get_current_site();
-		//echo "<pre>"; print_r($site); echo "</pre>";
 		$url = 'http://' . $site->domain . '/wp-signup.php';
-		//echo "<p>$url</p>";
-		//header('Location: ' . $url);
 		
 		if ( !function_exists( 'wp_redirect' ) )
 			include_once( ABSPATH . '/wp-includes/pluggable.php' );
 		wp_redirect( $url );
-		//wpmu_admin_do_redirect($url);	
 	}
 	function model_path( $ind = 'X', $type = 'default', $options = array() ) {
 		$options = ( count($options) != 0 ) ? $options : array( 'name' => '', 'modelblog' => '', 'description' => '', 'adminonly' => 'no' );
