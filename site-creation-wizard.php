@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Site Creation Wizard
-Version: 2.1
+Version: 2.1.1
 Description: Allow users to create a site using predefined templates. Compatible with BuddyPress and More Privacy Options.
 Author: Jon Gaulding, Ioannis Yessios
 Author URI: http://itg.yale.edu
@@ -34,6 +34,10 @@ class CreationWizard {
 			add_action( 'admin_init', array( $this, 'register' ) );
 		}
 		wp_register_style('scw-smoothness', WP_PLUGIN_URL . '/' . plugin_basename( dirname(__FILE__) ) . '/resources/css/smoothness/jquery-ui-1.8.7.custom.css');
+
+		if ( isset( $_REQUEST['page'] ) && $_REQUEST['page'] == 'scw_signup' ) {
+			$this->scw_signup();
+		}
 
 		if ( isset($_REQUEST['page']) && $_REQUEST['page'] == 'site_creation_wizard' ) {
 			wp_enqueue_script( 'jquery-ui-sortable' );
@@ -384,9 +388,23 @@ class CreationWizard {
 			$active_signup = 'all';
 		$active_signup = apply_filters( 'wpmu_active_signup', $active_signup ); // return "all", "none", "blog" or "user"
 		if ( $active_signup == 'all' || $active_signup == 'blog' )
-			add_dashboard_page( 'Create New '.$term, 'Create New '.$term, 'read', "/wp-signup.php" );
+			add_dashboard_page( 'Create New '.$term, 'Create New '.$term, 'read', "scw_signup", array($this, 'scw_signup') );
 	}
 	
+	function scw_signup() {
+		//echo "<h2>I am here</h2>";
+		
+		$site = get_current_site();
+		//echo "<pre>"; print_r($site); echo "</pre>";
+		$url = 'http://' . $site->domain . '/wp-signup.php';
+		//echo "<p>$url</p>";
+		//header('Location: ' . $url);
+		
+		if ( !function_exists( 'wp_redirect' ) )
+			include_once( ABSPATH . '/wp-includes/pluggable.php' );
+		wp_redirect( $url );
+		//wpmu_admin_do_redirect($url);	
+	}
 	function model_path( $ind = 'X', $type = 'default', $options = array() ) {
 		$options = ( count($options) != 0 ) ? $options : array( 'name' => '', 'modelblog' => '', 'description' => '', 'adminonly' => 'no' );
 		
