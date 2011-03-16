@@ -3,7 +3,7 @@ Contributors: yianniy,yitg
 Tags: wpmu, admin, administration, buddypress, site creation, more privacy options, site template
 Requires at least: 3.0
 Tested up to: 3.1
-Stable tag: 2.2
+Stable tag: 2.2.1
 
 Allow users to create a site using predefined templates. Compatible with BuddyPress and More Privacy Options.
 
@@ -95,6 +95,10 @@ Well, the too creation processes are completely different. If you want to use th
  
 == Changelog ==
 
+= 2.2.1 =
+
+* Fixed placement of 'Create New Site' Link within the Admin (and Network Admin) Menus.
+
 = 2.2 =
 
 * Fix for WP 3.1. The Administration page is now in the Network Admin page.
@@ -117,6 +121,10 @@ Well, the too creation processes are completely different. If you want to use th
 * This is the first version.
 
 == Upgrade Notice ==
+
+= 2.2.1 =
+
+* Fixed placement of 'Create New Site' Link within the Admin (and Network Admin) Menus.
 
 = 2.2 =
 

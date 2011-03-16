@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Site Creation Wizard
-Version: 2.2
+Version: 2.2.1
 Description: Allow users to create a site using predefined templates. Compatible with BuddyPress and More Privacy Options.
 Author: Jon Gaulding, Ioannis Yessios, Yale Instructional Technology Group
 Author URI: http://itg.yale.edu
@@ -11,7 +11,7 @@ Site Wide Only: true
 Network: true
 */
 
-/*  Copyright YEAR  PLUGIN_AUTHOR_NAME  (email : PLUGIN AUTHOR EMAIL)
+/*  Copyright 2011  Ioannis C. Yessios (email : ioannis.yessios@yale.edu)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License, version 2, as 
@@ -65,6 +65,8 @@ class CreationWizard {
 		add_action( 'wpmu_new_blog', array( $this, 'wpmu_new_blog' ) );
 		add_action( 'signup_blogform', array( $this, 'signup_form' ) );
 		add_action( $this->has_network_admin ? 'network_admin_menu' : 'admin_menu', array( $this, 'plugin_menu' ) );
+		add_action( 'admin_menu', array( $this, 'dashboard_link') );
+		add_action( 'network_admin_menu', array( $this, 'dashboard_link') );
 		add_action( 'signup_header', array( $this, 'signup_header' ) );
 		add_action( 'wp_ajax_scw-findsite', array( $this, 'findsite') );
 		add_action( 'preprocess_signup_form', array( $this, 'preprocess' ) );
@@ -387,6 +389,15 @@ class CreationWizard {
 		include($optionspath);
 	}
 	
+	function dashboard_link() {
+		$term = 'Site';
+		$active_signup = get_site_option( 'registration' );
+		if ( !$active_signup )
+			$active_signup = 'all';
+		$active_signup = apply_filters( 'wpmu_active_signup', $active_signup ); // return "all", "none", "blog" or "user"
+		if ( $active_signup == 'all' || $active_signup == 'blog' )
+			add_dashboard_page( 'Create New '.$term, 'Create New '.$term, 'read', "scw_signup", array($this, 'scw_signup') );
+	}
 	function plugin_menu() {
 		$term = 'Site';
 		//add_options_page ('Site Creation Wizard', 'Site Creation Wizard', 'administrator', 'blogswizard-settings-handle', array( $this, 'settings_page' ) );
@@ -398,14 +409,7 @@ class CreationWizard {
 			$parent_page = $this->has_network_admin ? 'settings.php' : 'ms-admin.php';
 		}
 		
-		add_submenu_page( $parent_page ,$term.' Creation Wizard', $term.' Creation Wizard', 'update_core', 'site_creation_wizard', array( $this, 'settings_page' ) );
-		
-		$active_signup = get_site_option( 'registration' );
-		if ( !$active_signup )
-			$active_signup = 'all';
-		$active_signup = apply_filters( 'wpmu_active_signup', $active_signup ); // return "all", "none", "blog" or "user"
-		if ( $active_signup == 'all' || $active_signup == 'blog' )
-			add_dashboard_page( 'Create New '.$term, 'Create New '.$term, 'read', "scw_signup", array($this, 'scw_signup') );
+		add_submenu_page( $parent_page ,$term.' Creation Wizard', $term.' Creation Wizard', 'update_core', 'site_creation_wizard', array( $this, 'settings_page' ) );	
 	}
 	
 	function scw_signup() {
