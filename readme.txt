@@ -1,9 +1,9 @@
 === Site Creation Wizard ===
-Contributors: yianniy
+Contributors: yianniy,yitg
 Tags: wpmu, admin, administration, buddypress, site creation, more privacy options, site template
 Requires at least: 3.0
-Tested up to: 3.0.4
-Stable tag: 2.1.1
+Tested up to: 3.1
+Stable tag: 2.2
 
 Allow users to create a site using predefined templates. Compatible with BuddyPress and More Privacy Options.
 
@@ -95,6 +95,10 @@ Well, the too creation processes are completely different. If you want to use th
  
 == Changelog ==
 
+= 2.2 =
+
+* Fix for WP 3.1. The Administration page is now in the Network Admin page.
+
 = 2.1.1 = 
 
 * Fixes but with redirection to Signup Page. (wp-signup.php)
@@ -113,6 +117,10 @@ Well, the too creation processes are completely different. If you want to use th
 * This is the first version.
 
 == Upgrade Notice ==
+
+= 2.2 =
+
+* Makes plugin compatible with version 3.1. The plugin's administration page is now on the Network Admin page under Settings.
 
 = 2.1.1 =
 Fixes problem with redirection to Signup Page (wp-signup.php). This problem seems to only be found in sites installed in sub-directories.

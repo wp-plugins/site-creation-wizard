@@ -1,11 +1,12 @@
 <?php
 /*
 Plugin Name: Site Creation Wizard
-Version: 2.1.1
+Version: 2.2
 Description: Allow users to create a site using predefined templates. Compatible with BuddyPress and More Privacy Options.
-Author: Jon Gaulding, Ioannis Yessios
+Author: Jon Gaulding, Ioannis Yessios, Yale Instructional Technology Group
 Author URI: http://itg.yale.edu
-Plugin URI: http://itg.yale.edu
+Author URI: http://www.yessios.com
+Plugin URI: http://plugins.commons.yale.edu/site-creation-wizard/
 Site Wide Only: true
 Network: true
 */
@@ -28,9 +29,20 @@ Network: true
 
 //require_once(ABSPATH . 'wp-admin/includes/plugin.php');
 
+/*
+Thanks to Boone Gorges for patching this plugin to make it compatible with WP 3.1
+*/
+
 class CreationWizard {
+	var $has_network_admin = false;
+
 	function CreationWizard() {
-		if ( is_admin() ){
+		// Determine whether this is WP 3.1+, which requires Network Admin hooks
+		if ( is_multisite() && function_exists( 'is_network_admin' ) ) {
+			$this->has_network_admin = true;
+		}
+	
+		if ( ( !$this->has_network_admin && is_admin() ) || ( $this->has_network_admin && is_network_admin() ) ){
 			add_action( 'admin_init', array( $this, 'register' ) );
 		}
 		wp_register_style('scw-smoothness', WP_PLUGIN_URL . '/' . plugin_basename( dirname(__FILE__) ) . '/resources/css/smoothness/jquery-ui-1.8.7.custom.css');
@@ -52,7 +64,7 @@ class CreationWizard {
 		}
 		add_action( 'wpmu_new_blog', array( $this, 'wpmu_new_blog' ) );
 		add_action( 'signup_blogform', array( $this, 'signup_form' ) );
-		add_action( 'admin_menu', array( $this, 'plugin_menu' ) );
+		add_action( $this->has_network_admin ? 'network_admin_menu' : 'admin_menu', array( $this, 'plugin_menu' ) );
 		add_action( 'signup_header', array( $this, 'signup_header' ) );
 		add_action( 'wp_ajax_scw-findsite', array( $this, 'findsite') );
 		add_action( 'preprocess_signup_form', array( $this, 'preprocess' ) );
@@ -379,9 +391,14 @@ class CreationWizard {
 		$term = 'Site';
 		//add_options_page ('Site Creation Wizard', 'Site Creation Wizard', 'administrator', 'blogswizard-settings-handle', array( $this, 'settings_page' ) );
 		
+		// The Dashboard menu must be added differently for WPMU, WP 3.0.x, and WP 3.1+
+		if ( $this->get_major_version() > 3 ) {
+			$parent_page = 'wpmu-admin.php';
+		} else {
+			$parent_page = $this->has_network_admin ? 'settings.php' : 'ms-admin.php';
+		}
 		
-		
-		add_submenu_page( ( ( $this->get_major_version() == 3 )?'ms-admin.php':'wpmu-admin.php' ),$term.' Creation Wizard', $term.' Creation Wizard', 'update_core', 'site_creation_wizard', array( $this, 'settings_page' ) );
+		add_submenu_page( $parent_page ,$term.' Creation Wizard', $term.' Creation Wizard', 'update_core', 'site_creation_wizard', array( $this, 'settings_page' ) );
 		
 		$active_signup = get_site_option( 'registration' );
 		if ( !$active_signup )
@@ -392,12 +409,18 @@ class CreationWizard {
 	}
 	
 	function scw_signup() {
+		//echo "<h2>I am here</h2>";
+		
 		$site = get_current_site();
+		//echo "<pre>"; print_r($site); echo "</pre>";
 		$url = 'http://' . $site->domain . '/wp-signup.php';
+		//echo "<p>$url</p>";
+		//header('Location: ' . $url);
 		
 		if ( !function_exists( 'wp_redirect' ) )
 			include_once( ABSPATH . '/wp-includes/pluggable.php' );
 		wp_redirect( $url );
+		//wpmu_admin_do_redirect($url);	
 	}
 	function model_path( $ind = 'X', $type = 'default', $options = array() ) {
 		$options = ( count($options) != 0 ) ? $options : array( 'name' => '', 'modelblog' => '', 'description' => '', 'adminonly' => 'no' );
