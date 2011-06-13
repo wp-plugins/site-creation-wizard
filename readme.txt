@@ -2,8 +2,8 @@
 Contributors: yianniy,yitg
 Tags: wpmu, admin, administration, buddypress, site creation, more privacy options, site template
 Requires at least: 3.0
-Tested up to: 3.1
-Stable tag: 2.2.1
+Tested up to: 3.1.3
+Stable tag: 2.4
 
 Allow users to create a site using predefined templates. Compatible with BuddyPress and More Privacy Options.
 
@@ -95,6 +95,15 @@ Well, the too creation processes are completely different. If you want to use th
  
 == Changelog ==
 
+=2.4= 
+* Minor Fix - removed 'upload_path' from options that are copied from the template site.
+
+= 2.3 =
+
+* Fixed a few issues
+** New site now sets admin e-mail, ownership of all posts and blogs to site owner
+** sets page, post, etc. creation dates to the current date time.
+
 = 2.2.1 =
 
 * Fixed placement of 'Create New Site' Link within the Admin (and Network Admin) Menus.
@@ -121,6 +130,15 @@ Well, the too creation processes are completely different. If you want to use th
 * This is the first version.
 
 == Upgrade Notice ==
+
+= 2.4 = 
+* Minor Fix - removed 'upload_path' from options that are copied from the template site.
+
+= 2.3 =
+
+* Fixed a few issues
+** New site now sets admin e-mail, ownership of all posts and blogs to site owner
+** sets page, post, etc. creation dates to the current date time.
 
 = 2.2.1 =
 

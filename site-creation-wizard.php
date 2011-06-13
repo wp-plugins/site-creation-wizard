@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Site Creation Wizard
-Version: 2.2.1
+Version: 2.4
 Description: Allow users to create a site using predefined templates. Compatible with BuddyPress and More Privacy Options.
 Author: Jon Gaulding, Ioannis Yessios, Yale Instructional Technology Group
 Author URI: http://itg.yale.edu
@@ -26,8 +26,6 @@ Network: true
     along with this program; if not, write to the Free Software
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
-
-//require_once(ABSPATH . 'wp-admin/includes/plugin.php');
 
 /*
 Thanks to Boone Gorges for patching this plugin to make it compatible with WP 3.1
@@ -136,14 +134,19 @@ class CreationWizard {
 		if ( !isset( $_POST['creationWizard'] ) || $_POST['creationWizard'] != 1 ) 
 			return;
 
+		$adminemail = false;
+		global $current_user;
+		$userid = $current_user->ID;
 		if ( is_super_admin() &&  isset($_POST['new_blog_owner']) && trim( $_POST['new_blog_owner'] ) != '' ) {
 			$userid = get_user_id_from_string( $_POST['new_blog_owner'] );
 			if ( $userid !== null ) {
 				if ( add_user_to_blog( $new_blog_id, $userid, 'administrator' ) == true ) {
-					global $current_user;
 					remove_user_from_blog( $current_user->ID , $new_blog_id );
 				}
-			}
+				$tmpuser = get_userdata($userid);
+				$adminemail = $tmpuser->user_email;
+			} else 
+				$userid = $current_user->ID;
 		}
 
 		// list of options that shouldn't be touched
@@ -160,7 +163,8 @@ class CreationWizard {
 				'wp_' . $type_option_model_blog_id . '_user_roles',
 				'wp_' . $feature_option_model_blog_id . '_user_roles',
 				'fileupload_url',
-				'recently_activated'
+				'recently_activated',
+				'upload_path'
 				);
 
 		$type_option_model_blog_id = ( isset( $_POST['type_option_model_blog'] ) ) ? $_POST['type_option_model_blog'] : 0;
@@ -190,6 +194,9 @@ class CreationWizard {
 			$wpdb->query( "INSERT INTO $wpdb->links SELECT * FROM {$type_option_model_blog_prefix}links" );
 			$wpdb->query( "INSERT INTO $wpdb->postmeta SELECT * FROM {$type_option_model_blog_prefix}postmeta" );
 			$wpdb->query( "INSERT INTO $wpdb->posts SELECT * FROM {$type_option_model_blog_prefix}posts" );
+			$date = date('Y-m-d H:i:s');
+			$gmdate = gmdate('Y-m-d H:i:s');
+			$wpdb->query( "UPDATE $wpdb->posts SET post_author = $userid, post_date = '$date', post_modified = '$date', post_date_gmt = '$gmdate', post_modified_gmt = '$gmdate'" );
 			//echo "<pre>INSERT INTO $wpdb->posts SELECT * FROM {$type_option_model_blog_prefix}posts</pre>";
 			$wpdb->query( "INSERT INTO $wpdb->term_relationships SELECT * FROM {$type_option_model_blog_prefix}term_relationships" );
 			$wpdb->query( "INSERT INTO $wpdb->term_taxonomy SELECT * FROM {$type_option_model_blog_prefix}term_taxonomy" );
@@ -243,6 +250,10 @@ class CreationWizard {
 				}
 			}
 			update_blog_option($new_blog_id, 'active_plugins', $new_blog_active_plugins);
+		}
+		if ( is_super_admin() && $adminemail != false ) {
+			update_blog_option($new_blog_id, 'admin_email', $adminemail);
+			update_blog_option($new_blog_id, 'new_admin_email', $adminemail);
 		}
 	}
 	
@@ -337,28 +348,34 @@ class CreationWizard {
 				<div style="padding-left:35px">Unformatted Site, best for advanced users who already have experience with Wordpress.</div>
 		<?php
 		
-		$features_options_array = get_site_option('features_options_array');
-		echo '<label>Select the feature set you want for your blog:</label>';
+		$features_options_array = get_site_option('features_options_array', array() );
 		
-		foreach($features_options_array as $key => $feature_option) {
-			if( $feature_option['adminonly'] != 'yes' || current_user_can( 'manage_network_options' ) ) {
-				echo '<label for="' . $feature_option['name'] . '">';
-
-				$checked = ( isset( $_POST['feature_option_model_blog'] ) && in_array( $feature_option['modelblog'], $_POST['feature_option_model_blog'] ) ) ? ' checked="checked" ':'';
-				
-				echo '<input type="checkbox" id="' . $feature_option['name'] . '" name="feature_option_model_blog[]" value="'. $feature_option['modelblog'] .'"' . $checked . ' />' .
-				'<strong>' . $feature_option['name'] . '</strong>';
-				if ( current_user_can( 'manage_network_options' ) && $feature_option['adminonly'] == 'yes' )
-					echo ' <i>(ADMIN ONLY)</i>';
-				echo '</label>';
-				?>
-				<div style="padding-left:35px">
-				<?php
-				// echo the description for this feature type:
-				echo $feature_option['description'];
-				?>
-				</div>
-				<?php
+		if ( count($feature_options_array) == 1 && $feature_options_array[0]['feature_option_model_blog'] == 0 ) {
+			$feature_options_array = array();
+		}
+		if ( count($features_options_array) > 0 ) {
+			echo '<label>Select the feature set you want for your blog:</label>';
+			
+			foreach($features_options_array as $key => $feature_option) {
+				if( $feature_option['adminonly'] != 'yes' || current_user_can( 'manage_network_options' ) ) {
+					echo '<label for="' . $feature_option['name'] . '">';
+	
+					$checked = ( isset( $_POST['feature_option_model_blog'] ) && in_array( $feature_option['modelblog'], $_POST['feature_option_model_blog'] ) ) ? ' checked="checked" ':'';
+					
+					echo '<input type="checkbox" id="' . $feature_option['name'] . '" name="feature_option_model_blog[]" value="'. $feature_option['modelblog'] .'"' . $checked . ' />' .
+					'<strong>' . $feature_option['name'] . '</strong>';
+					if ( current_user_can( 'manage_network_options' ) && $feature_option['adminonly'] == 'yes' )
+						echo ' <i>(ADMIN ONLY)</i>';
+					echo '</label>';
+					?>
+					<div style="padding-left:35px">
+					<?php
+					// echo the description for this feature type:
+					echo $feature_option['description'];
+					?>
+					</div>
+					<?php
+				}
 			}
 		}
 		echo get_site_option( 'wizard_policy_text' );
@@ -403,7 +420,7 @@ class CreationWizard {
 		//add_options_page ('Site Creation Wizard', 'Site Creation Wizard', 'administrator', 'blogswizard-settings-handle', array( $this, 'settings_page' ) );
 		
 		// The Dashboard menu must be added differently for WPMU, WP 3.0.x, and WP 3.1+
-		if ( $this->get_major_version() > 3 ) {
+		if ( $this->get_major_version() < 3 ) {
 			$parent_page = 'wpmu-admin.php';
 		} else {
 			$parent_page = $this->has_network_admin ? 'settings.php' : 'ms-admin.php';
