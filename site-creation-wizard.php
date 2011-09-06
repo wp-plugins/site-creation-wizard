@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Site Creation Wizard
-Version: 2.4
+Version: 2.4.1
 Description: Allow users to create a site using predefined templates. Compatible with BuddyPress and More Privacy Options.
 Author: Jon Gaulding, Ioannis Yessios, Yale Instructional Technology Group
 Author URI: http://itg.yale.edu
@@ -350,8 +350,8 @@ class CreationWizard {
 		
 		$features_options_array = get_site_option('features_options_array', array() );
 		
-		if ( count($feature_options_array) == 1 && $feature_options_array[0]['feature_option_model_blog'] == 0 ) {
-			$feature_options_array = array();
+		if ( count($features_options_array) == 1 && $features_options_array[0]['feature_option_model_blog'] == 0 ) {
+			$features_options_array = array();
 		}
 		if ( count($features_options_array) > 0 ) {
 			echo '<label>Select the feature set you want for your blog:</label>';
