@@ -1,13 +1,18 @@
 <?php
 
+// activate Tiny MCE WYSIWYG editor for textarea boxes.
 wp_tiny_mce( true,
 			array( "editor_selector" => "creation_wizard" )
 			);
+			
 // stop everything if this user is trying to do something he or she is not supposed to
 if ( ! current_user_can('activate_plugins') ) {
 	wp_die(__('You do not have sufficient permissions to activate plugins for this blog.'));
 }
 
+
+//Update SCW Options sent by POST from form
+//First check nonce for security's sake.
 if ( isset( $_REQUEST['_wpnonce'] ) ) {
 	$nonce=$_REQUEST['_wpnonce'];
 	if (! wp_verify_nonce($nonce) ) die(__('Security check') );
@@ -15,14 +20,16 @@ if ( isset( $_REQUEST['_wpnonce'] ) ) {
 	unset ( $_POST['_wp_http_referer'] );
 
 	if( isset( $_POST['wizard_policy_text'] ) ) {
-		update_site_option('wizard_policy_text', $_POST['wizard_policy_text'] );
+		$policy = str_replace( array( '\"', "\'" ), array( '', '' ), $_POST['wizard_policy_text'] );
+		update_site_option('wizard_policy_text', esc_textarea($policy) );
 		unset( $_POST['wizard_policy_text'] );
 	}
 	if( isset( $_POST['wizard_checkbox_text'] ) ) {
-		update_site_option('wizard_checkbox_text', $_POST['wizard_checkbox_text'] );
+		$checkbox = str_replace( array( '\"', "\'" ), array( '', '' ), $_POST['wizard_checkbox_text'] );
+		update_site_option('wizard_checkbox_text', esc_textarea($checkbox) );
 		unset( $_POST['wizard_policy_text'] );
 	}
-
+	
 	$type_options_array = array();
 	$features_options_array = array();
 		
@@ -30,20 +37,20 @@ if ( isset( $_REQUEST['_wpnonce'] ) ) {
 		if ( preg_match( '|typeoption_([0-9]+)_name|', $key, $matches ) ) {
 			$i = $matches[1];
 			$option_array = array();
-			$option_array['name'] = $_POST['typeoption_'.$i.'_name'];
-			$option_array['modelblog'] = $_POST['typeoption_'.$i.'_modelblog'];
-			$option_array['description'] = $_POST['typeoption_'.$i.'_description'];
-			$option_array['adminonly'] = $_POST['typeoption_'.$i.'_adminonly'];
+			$option_array['name'] = htmlentities($_POST['typeoption_'.$i.'_name']);
+			$option_array['modelblog'] = intval($_POST['typeoption_'.$i.'_modelblog']);
+			$option_array['description'] = htmlentities(stripslashes($_POST['typeoption_'.$i.'_description']));
+			$option_array['adminonly'] = (isset($_POST['typeoption_'.$i.'_adminonly']) && $_POST['typeoption_'.$i.'_adminonly'] == 'yes' ) ? 'yes' : '';
 			
 			$type_options_array['type_option_'.$i] = $option_array;
 		} else if ( preg_match( '|featureoption_([0-9]+)_name|', $key, $matches ) ) {
 			$i = $matches[1];
 			$option_array = array();
 			
-			$option_array['name'] = $_POST['featureoption_'.$i.'_name'];
-			$option_array['modelblog'] = $_POST['featureoption_'.$i.'_modelblog'];
-			$option_array['description'] = $_POST['featureoption_'.$i.'_description'];
-			$option_array['adminonly'] = $_POST['featureoption_'.$i.'_adminonly'];
+			$option_array['name'] = htmlentities($_POST['featureoption_'.$i.'_name']);
+			$option_array['modelblog'] = intval($_POST['featureoption_'.$i.'_modelblog']);
+			$option_array['description'] = htmlentities(stripslashes($_POST['featureoption_'.$i.'_description']));
+			$option_array['adminonly'] = (isset($_POST['featureoption_'.$i.'_adminonly']) && $_POST['featureoption_'.$i.'_adminonly'] == 'yes') ? 'yes' : '';
 			
 			$features_options_array['features_option_'.$i] = $option_array;
 		}
@@ -52,12 +59,16 @@ if ( isset( $_REQUEST['_wpnonce'] ) ) {
 	update_site_option('features_options_array', $features_options_array );
 }
 
+// Render out SCW setting interface.
+
+// Get SCW Options.
 $type_options_array = (get_site_option('type_options_array') && !is_null(get_site_option('type_options_array')) ) ? 
 	get_site_option('type_options_array') : array();
 
 $features_options_array = (get_site_option('features_options_array') && !is_null(get_site_option('features_options_array')) )?
 	get_site_option('features_options_array') : array();
 
+// Implement UI w/ jQuery
 ?>
 
 <script type="text/javascript">
@@ -107,8 +118,9 @@ $features_options_array = (get_site_option('features_options_array') && !is_null
 echo '<div id="scw_default_li" style="display:none">';
 $this->model_path();
 echo "</div>";
-//$this->model_path('X', 'feature');
 
+
+//make form
 ?>
 <div class="wrap">
 
@@ -124,10 +136,10 @@ echo "</div>";
 			<td colspan="2"><h3><?php _e('Policiy Information'); ?></h3></td>
 		</tr>
 		<tr valign="top">
-			<td><?php _e('Policy Text'); ?>: </td><td><textarea class="creation_wizard" name="wizard_policy_text" cols="60" rows="5"><?php echo get_site_option('wizard_policy_text'); ?></textarea></td>
+			<td><?php _e('Policy Text'); ?>: </td><td><textarea class="creation_wizard" name="wizard_policy_text" cols="60" rows="5"><?php echo html_entity_decode(get_site_option('wizard_policy_text')); ?></textarea></td>
 		</tr>
 		<tr valign="top">
-			<td><?php _e('Checkbox Text'); ?>: </td><td><textarea class="creation_wizard" name="wizard_checkbox_text" cols="60" rows="5"><?php echo get_site_option('wizard_checkbox_text'); ?></textarea></td>
+			<td><?php _e('Checkbox Text'); ?>: </td><td><textarea class="creation_wizard" name="wizard_checkbox_text" cols="60" rows="5"><?php echo html_entity_decode(get_site_option('wizard_checkbox_text')); ?></textarea></td>
 		</tr>
 	</table>
 	
@@ -147,16 +159,16 @@ echo "</div>";
                     <table cellpadding="0" cellspacing="0" width="100%">
                         <tr>
                         	<td width="17px">&nbsp;</td>
-                            <td width="180px" align="left" style="border-right:1px dashed blue">
+                            <td width="180px" align="left" style="border-right:1px solid #AAA">
                                 name<?php echo $type; ?>
                             </td>
                             <td width="80px" align="left">
                                 template site
                             </td>
-                            <td width="17px" align="center" style="border-right:1px dashed blue">&nbsp;
+                            <td width="17px" align="center" style="border-right:1px solid #AAA">&nbsp;
                                 
                             </td>
-                            <td align="left" style="border-right:1px dashed blue">
+                            <td align="left" style="border-right:1px solid #AAA">
                                 description
                             </td>
                             <td width="120px" align="center">
@@ -203,16 +215,16 @@ echo "</div>";
                     <table cellpadding="0" cellspacing="0" width="100%">
                         <tr>
                         	<td width="17px">&nbsp;</td>
-                            <td width="180px" align="left" style="border-right:1px dashed blue">
+                            <td width="180px" align="left" style="border-right:1px solid #AAA">
                                 name<?php echo $type; ?>
                             </td>
                             <td width="80px" align="left">
                                 template site
                             </td>
-                            <td width="17px" align="center" style="border-right:1px dashed blue">&nbsp;
+                            <td width="17px" align="center" style="border-right:1px solid #AAA">&nbsp;
                                 
                             </td>
-                            <td align="left" style="border-right:1px dashed blue">
+                            <td align="left" style="border-right:1px solid #AAA">
                                 description
                             </td>
                             <td width="120px" align="center">

@@ -3,7 +3,7 @@ Contributors: yianniy,yitg
 Tags: wpmu, admin, administration, buddypress, site creation, more privacy options, site template
 Requires at least: 3.0
 Tested up to: 3.2.1
-Stable tag: 2.4.1
+Stable tag: 3.0
 
 Allow users to create a site using predefined templates. Compatible with BuddyPress and More Privacy Options.
 
@@ -95,6 +95,13 @@ Well, the too creation processes are completely different. If you want to use th
  
 == Changelog ==
 
+= 3.0 =
+* Updates method used to copy information from template sites.
+**Type template is completely copied with replacements for admin ids, urls, and paths.
+**It also copies tables created by plugins. 
+**Feature type options copied if they do not already exist and plugin generated tables are copied if they do not already exist.
+*Fixed bug with policy text not displaying links correctly.
+
 = 2.4.1 =
 * Minor Buf fix.
 
@@ -132,7 +139,12 @@ Well, the too creation processes are completely different. If you want to use th
 = 1.0 =
 * This is the first version.
 
-== Upgrade Notice ==
+= 3.0 =
+* Updates method used to copy information from template sites.
+**Type template is completely copied with replacements for admin ids, urls, and paths.
+**It also copies tables created by plugins. 
+**Feature type options copied if they do not already exist and plugin generated tables are copied if they do not already exist.
+*Fixed bug with policy text not displaying links correctly.
 
 = 2.4.1 =
 * Minor bug Fix
